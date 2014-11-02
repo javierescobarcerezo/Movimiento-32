@@ -336,13 +336,13 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         {
             Pen drawPen;
             if (//Comprueba que el brazo izquierdo esté posicionado correctamente
-                (skeleton.Joints[JointType.HandLeft].Position.Z + 0.10 > skeleton.Joints[JointType.ShoulderLeft].Position.Z) &&
-                (skeleton.Joints[JointType.HandLeft].Position.Z - 0.10 < skeleton.Joints[JointType.ShoulderLeft].Position.Z) &&
+                (skeleton.Joints[JointType.HandLeft].Position.Z + 0.15 > skeleton.Joints[JointType.ShoulderLeft].Position.Z) &&
+                (skeleton.Joints[JointType.HandLeft].Position.Z - 0.15 < skeleton.Joints[JointType.ShoulderLeft].Position.Z) &&
                 (skeleton.Joints[JointType.HandLeft].Position.X < skeleton.Joints[JointType.ShoulderLeft].Position.X) &&
                 (skeleton.Joints[JointType.HandLeft].Position.X < skeleton.Joints[JointType.WristLeft].Position.X) &&
                 //Comprueba que el brazo derecho esté posicionado correctamente
-                (skeleton.Joints[JointType.HandRight].Position.Z + 0.10 > skeleton.Joints[JointType.ShoulderRight].Position.Z) &&
-                (skeleton.Joints[JointType.HandRight].Position.Z - 0.10 < skeleton.Joints[JointType.ShoulderRight].Position.Z) &&
+                (skeleton.Joints[JointType.HandRight].Position.Z + 0.15 > skeleton.Joints[JointType.ShoulderRight].Position.Z) &&
+                (skeleton.Joints[JointType.HandRight].Position.Z - 0.15 < skeleton.Joints[JointType.ShoulderRight].Position.Z) &&
                 (skeleton.Joints[JointType.HandRight].Position.X > skeleton.Joints[JointType.ShoulderRight].Position.X) &&
                 (skeleton.Joints[JointType.HandRight].Position.X > skeleton.Joints[JointType.WristRight].Position.X) &&
                 //Comprueba que ambas manos estén al nivel de los hombros
@@ -360,7 +360,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                     drawPen = penTranscurso; 
                     inicio = false;
                     transcurso = true;
-                    referencia = skeleton.Joints[JointType.HandLeft].Position.X;
+                    //Guardamos la posición de la mano izquierda como referencia para realizar el Movimiento 32
+                    referencia = skeleton.Joints[JointType.HandLeft].Position.X; 
                 }
             }
             else drawPen = penError;
@@ -377,7 +378,21 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         Pen LeftArmPosition(Skeleton skeleton, float distancia)
         {
             Pen drawPen;
-            if (skeleton.Joints[JointType.HandLeft].Position.X > referencia + distancia)
+            if (//Comprobamos que se realiza el Movimiento 32
+                (skeleton.Joints[JointType.HandLeft].Position.X > referencia + distancia) &&
+                (skeleton.Joints[JointType.HandLeft].Position.X < referencia + distancia + 0.10) &&
+
+                //Comprueba que el brazo derecho esté posicionado correctamente
+                (skeleton.Joints[JointType.HandRight].Position.Z + 0.15 > skeleton.Joints[JointType.ShoulderRight].Position.Z) &&
+                (skeleton.Joints[JointType.HandRight].Position.Z - 0.15 < skeleton.Joints[JointType.ShoulderRight].Position.Z) &&
+                (skeleton.Joints[JointType.HandRight].Position.X > skeleton.Joints[JointType.ShoulderRight].Position.X) &&
+                (skeleton.Joints[JointType.HandRight].Position.X > skeleton.Joints[JointType.WristRight].Position.X) &&
+                //Comprueba que ambas manos estén al nivel de los hombros
+                (skeleton.Joints[JointType.HandRight].Position.Y + 0.15 > skeleton.Joints[JointType.ShoulderRight].Position.Y) &&
+                (skeleton.Joints[JointType.HandRight].Position.Y - 0.15 < skeleton.Joints[JointType.ShoulderRight].Position.Y) &&
+                (skeleton.Joints[JointType.HandLeft].Position.Y + 0.15 > skeleton.Joints[JointType.ShoulderRight].Position.Y) &&
+                (skeleton.Joints[JointType.HandLeft].Position.Y - 0.15 < skeleton.Joints[JointType.ShoulderRight].Position.Y)
+                )
             {
                 drawPen = penCorrecto; //Movimiento realizado correctamente
             }
