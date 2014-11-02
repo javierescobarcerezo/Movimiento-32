@@ -27,6 +27,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         private bool inicio = true;
         private bool transcurso = false;
         private bool completado = false;
+        private int acumulador = 0;
+        private float referencia;
 
         /// <summary>
         /// Width of output drawing
@@ -266,36 +268,44 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// <param name="drawingContext">drawing context to draw to</param>
         private void DrawBonesAndJoints(Skeleton skeleton, DrawingContext drawingContext)
         {
-            // Render Torso
-            this.DrawBone(skeleton, drawingContext, JointType.Head, JointType.ShoulderCenter, trackedBonePen);
-            this.DrawBone(skeleton, drawingContext, JointType.ShoulderCenter, JointType.ShoulderLeft, trackedBonePen);
-            this.DrawBone(skeleton, drawingContext, JointType.ShoulderCenter, JointType.ShoulderRight, trackedBonePen);
-            this.DrawBone(skeleton, drawingContext, JointType.ShoulderCenter, JointType.Spine, trackedBonePen);
-            this.DrawBone(skeleton, drawingContext, JointType.Spine, JointType.HipCenter, trackedBonePen);
-            this.DrawBone(skeleton, drawingContext, JointType.HipCenter, JointType.HipLeft, trackedBonePen);
-            this.DrawBone(skeleton, drawingContext, JointType.HipCenter, JointType.HipRight, trackedBonePen);
             Pen drawPen;
-            // Left Arm
-            drawPen = LeftArmInit(skeleton);
+            float distancia = 0.15F;
+            if (inicio) {
+                drawPen = LeftArmInit(skeleton);
+            }else if(transcurso){
+                drawPen = LeftArmPosition(skeleton, distancia);
+            }else
+                drawPen = penError;
 
+            
+            // Render Torso
+            this.DrawBone(skeleton, drawingContext, JointType.Head, JointType.ShoulderCenter, drawPen);
+            this.DrawBone(skeleton, drawingContext, JointType.ShoulderCenter, JointType.ShoulderLeft, drawPen);
+            this.DrawBone(skeleton, drawingContext, JointType.ShoulderCenter, JointType.ShoulderRight, drawPen);
+            this.DrawBone(skeleton, drawingContext, JointType.ShoulderCenter, JointType.Spine, drawPen);
+            this.DrawBone(skeleton, drawingContext, JointType.Spine, JointType.HipCenter, drawPen);
+            this.DrawBone(skeleton, drawingContext, JointType.HipCenter, JointType.HipLeft, drawPen);
+            this.DrawBone(skeleton, drawingContext, JointType.HipCenter, JointType.HipRight, drawPen);
+
+            // Left Arm
             this.DrawBone(skeleton, drawingContext, JointType.ShoulderLeft, JointType.ElbowLeft, drawPen);
             this.DrawBone(skeleton, drawingContext, JointType.ElbowLeft, JointType.WristLeft, drawPen);
             this.DrawBone(skeleton, drawingContext, JointType.WristLeft, JointType.HandLeft, drawPen);
 
             // Right Arm
-            this.DrawBone(skeleton, drawingContext, JointType.ShoulderRight, JointType.ElbowRight, trackedBonePen);
-            this.DrawBone(skeleton, drawingContext, JointType.ElbowRight, JointType.WristRight, trackedBonePen);
-            this.DrawBone(skeleton, drawingContext, JointType.WristRight, JointType.HandRight, trackedBonePen);
+            this.DrawBone(skeleton, drawingContext, JointType.ShoulderRight, JointType.ElbowRight, drawPen);
+            this.DrawBone(skeleton, drawingContext, JointType.ElbowRight, JointType.WristRight, drawPen);
+            this.DrawBone(skeleton, drawingContext, JointType.WristRight, JointType.HandRight, drawPen);
 
             // Left Leg
-            this.DrawBone(skeleton, drawingContext, JointType.HipLeft, JointType.KneeLeft, trackedBonePen);
-            this.DrawBone(skeleton, drawingContext, JointType.KneeLeft, JointType.AnkleLeft, trackedBonePen);
-            this.DrawBone(skeleton, drawingContext, JointType.AnkleLeft, JointType.FootLeft, trackedBonePen);
+            this.DrawBone(skeleton, drawingContext, JointType.HipLeft, JointType.KneeLeft, drawPen);
+            this.DrawBone(skeleton, drawingContext, JointType.KneeLeft, JointType.AnkleLeft, drawPen);
+            this.DrawBone(skeleton, drawingContext, JointType.AnkleLeft, JointType.FootLeft, drawPen);
 
             // Right Leg
-            this.DrawBone(skeleton, drawingContext, JointType.HipRight, JointType.KneeRight, trackedBonePen);
-            this.DrawBone(skeleton, drawingContext, JointType.KneeRight, JointType.AnkleRight, trackedBonePen);
-            this.DrawBone(skeleton, drawingContext, JointType.AnkleRight, JointType.FootRight, trackedBonePen);
+            this.DrawBone(skeleton, drawingContext, JointType.HipRight, JointType.KneeRight, drawPen);
+            this.DrawBone(skeleton, drawingContext, JointType.KneeRight, JointType.AnkleRight, drawPen);
+            this.DrawBone(skeleton, drawingContext, JointType.AnkleRight, JointType.FootRight, drawPen);
 
             // Render Joints
             foreach (Joint joint in skeleton.Joints)
@@ -325,14 +335,53 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         Pen LeftArmInit(Skeleton skeleton)
         {
             Pen drawPen;
-            if (
+            if (//Comprueba que el brazo izquierdo esté posicionado correctamente
                 (skeleton.Joints[JointType.HandLeft].Position.Z + 0.10 > skeleton.Joints[JointType.ShoulderLeft].Position.Z) &&
                 (skeleton.Joints[JointType.HandLeft].Position.Z - 0.10 < skeleton.Joints[JointType.ShoulderLeft].Position.Z) &&
+                (skeleton.Joints[JointType.HandLeft].Position.X < skeleton.Joints[JointType.ShoulderLeft].Position.X) &&
+                (skeleton.Joints[JointType.HandLeft].Position.X < skeleton.Joints[JointType.WristLeft].Position.X) &&
+                //Comprueba que el brazo derecho esté posicionado correctamente
+                (skeleton.Joints[JointType.HandRight].Position.Z + 0.10 > skeleton.Joints[JointType.ShoulderRight].Position.Z) &&
+                (skeleton.Joints[JointType.HandRight].Position.Z - 0.10 < skeleton.Joints[JointType.ShoulderRight].Position.Z) &&
+                (skeleton.Joints[JointType.HandRight].Position.X > skeleton.Joints[JointType.ShoulderRight].Position.X) &&
+                (skeleton.Joints[JointType.HandRight].Position.X > skeleton.Joints[JointType.WristRight].Position.X) &&
+                //Comprueba que ambas manos estén al nivel de los hombros
+                (skeleton.Joints[JointType.HandRight].Position.Y + 0.15 > skeleton.Joints[JointType.ShoulderRight].Position.Y) &&
+                (skeleton.Joints[JointType.HandRight].Position.Y - 0.15 < skeleton.Joints[JointType.ShoulderRight].Position.Y) &&
+                (skeleton.Joints[JointType.HandLeft].Position.Y + 0.15 > skeleton.Joints[JointType.ShoulderRight].Position.Y) &&
+                (skeleton.Joints[JointType.HandLeft].Position.Y - 0.15 < skeleton.Joints[JointType.ShoulderRight].Position.Y)
                 )
             {
-                drawPen = penCorrecto;
+                drawPen = penInicio;
+                acumulador++;
+                if (acumulador > 100)
+                {
+                    //Posición de inicio alcanzada correctamente
+                    drawPen = penTranscurso; 
+                    inicio = false;
+                    transcurso = true;
+                    referencia = skeleton.Joints[JointType.HandLeft].Position.X;
+                }
             }
             else drawPen = penError;
+
+            return drawPen;
+        }
+
+        /// <summary>
+        /// Comprueba el movimiento de la mano izquierda en el eje X se realiza correctamente
+        /// </summary>
+        /// <param name="skeleton"></param>
+        /// <param name="distancia"></param>
+        /// <returns></returns>
+        Pen LeftArmPosition(Skeleton skeleton, float distancia)
+        {
+            Pen drawPen;
+            if (skeleton.Joints[JointType.HandLeft].Position.X > referencia + distancia)
+            {
+                drawPen = penCorrecto; //Movimiento realizado correctamente
+            }
+            else drawPen = penTranscurso;
 
             return drawPen;
         }
