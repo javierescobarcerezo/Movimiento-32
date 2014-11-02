@@ -22,8 +22,6 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         private readonly Pen penInicio = new Pen(Brushes.Cyan, 6);
         private readonly Pen penError = new Pen(Brushes.Red, 6);
 
-        enum Postura { error, inicio, transcurso, completado }
-
         private bool inicio = true;
         private bool transcurso = false;
         private bool completado = false;
