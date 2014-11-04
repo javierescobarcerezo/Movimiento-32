@@ -21,6 +21,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         private readonly Pen penTranscurso = new Pen(Brushes.Yellow, 6);
         private readonly Pen penInicio = new Pen(Brushes.Cyan, 6);
         private readonly Pen penError = new Pen(Brushes.Red, 6);
+        private readonly Pen drawPen = new Pen(Brushes.Blue, 6);
 
         private bool inicio = true;
         private bool transcurso = false;
@@ -266,14 +267,15 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         /// <param name="drawingContext">drawing context to draw to</param>
         private void DrawBonesAndJoints(Skeleton skeleton, DrawingContext drawingContext)
         {
-            Pen drawPen;
-            float distancia = 0.15F;
+            Pen drawPenBrazo;
+            float distancia = 0.15F; //distancia que queremos que cubra la mano izquierda
+            //Primero habrá que completar la posición de inicio (brazos en cruz) antes de continuar
             if (inicio) {
-                drawPen = LeftArmInit(skeleton);
+                drawPenBrazo = LeftArmInit(skeleton);
             }else if(transcurso){
-                drawPen = LeftArmPosition(skeleton, distancia);
+                drawPenBrazo = LeftArmPosition(skeleton, distancia);
             }else
-                drawPen = penError;
+                drawPenBrazo = penError;
 
             
             // Render Torso
@@ -286,9 +288,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
             this.DrawBone(skeleton, drawingContext, JointType.HipCenter, JointType.HipRight, drawPen);
 
             // Left Arm
-            this.DrawBone(skeleton, drawingContext, JointType.ShoulderLeft, JointType.ElbowLeft, drawPen);
-            this.DrawBone(skeleton, drawingContext, JointType.ElbowLeft, JointType.WristLeft, drawPen);
-            this.DrawBone(skeleton, drawingContext, JointType.WristLeft, JointType.HandLeft, drawPen);
+            this.DrawBone(skeleton, drawingContext, JointType.ShoulderLeft, JointType.ElbowLeft, drawPenBrazo);
+            this.DrawBone(skeleton, drawingContext, JointType.ElbowLeft, JointType.WristLeft, drawPenBrazo);
+            this.DrawBone(skeleton, drawingContext, JointType.WristLeft, JointType.HandLeft, drawPenBrazo);
 
             // Right Arm
             this.DrawBone(skeleton, drawingContext, JointType.ShoulderRight, JointType.ElbowRight, drawPen);
@@ -351,7 +353,8 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 )
             {
                 drawPen = penInicio;
-                acumulador++;
+                acumulador++; 
+                //Comprobamos que la posición de inicio se ha mantenido durante un tiempo
                 if (acumulador > 100)
                 {
                     //Posición de inicio alcanzada correctamente
@@ -376,6 +379,9 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
         Pen LeftArmPosition(Skeleton skeleton, float distancia)
         {
             Pen drawPen;
+            if(completado)
+                return drawPen = penCorrecto;
+
             if (//Comprobamos que se realiza el Movimiento 32
                 (skeleton.Joints[JointType.HandLeft].Position.X > referencia + distancia) &&
                 (skeleton.Joints[JointType.HandLeft].Position.X < referencia + distancia + 0.10) &&
@@ -393,6 +399,7 @@ namespace Microsoft.Samples.Kinect.SkeletonBasics
                 )
             {
                 drawPen = penCorrecto; //Movimiento realizado correctamente
+                completado = true;
             }
             else drawPen = penTranscurso;
 
